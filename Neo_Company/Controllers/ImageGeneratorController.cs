@@ -9,7 +9,7 @@ namespace Neo_Company.Controllers
     public class ImageGeneratorController : ControllerBase
     {
         [HttpPost]
-        public IActionResult GenerateImage([FromBody] SignalParams parameters)
+        public async Task<IActionResult> GenerateImage([FromBody] SignalParams parameters)
         {
             //Задаём ширину и высоту полотна
             int widthOfCanvas = 1000;
@@ -59,8 +59,11 @@ namespace Neo_Company.Controllers
                 // Ставим позицию в MemoryStream на ноль
                 stream.Position = 0;
 
-                // Возвращаем MemoryStream как FileResult
-                fileResult = File(stream.ToArray(), "image/png", "sine_wave.png");
+                // Возвращайте массив байтов из MemoryStream, чтобы результат IActionResult мог интерпретировать асинхронно
+                fileResult = new FileContentResult(await Task.FromResult(stream.ToArray()), "image/png")
+                {
+                    FileDownloadName = "sine_wave.png"
+                };
             }
 
             return fileResult;
